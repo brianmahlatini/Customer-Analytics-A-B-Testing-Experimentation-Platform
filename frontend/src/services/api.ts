@@ -85,6 +85,40 @@ export type ExperimentConfig = {
   };
 };
 
+export type MlModelSummary = {
+  algorithm: string;
+  purpose: string;
+  target?: string;
+  features: string[];
+  holdout_auc?: number;
+  conversion_base_estimator?: string;
+  revenue_base_estimator?: string;
+  conversion_probability_mae?: number;
+  revenue_mae?: number;
+};
+
+export type UpliftSegment = {
+  channel: string;
+  device: string;
+  country: string;
+  customers: number;
+  predicted_conversion_uplift: number;
+  predicted_revenue_uplift: number;
+};
+
+export type MlInsights = {
+  models: MlModelSummary[];
+  top_uplift_segments: UpliftSegment[];
+  targeting_recommendation: {
+    best_targeting_rule: string;
+    top_500_average_conversion_uplift: number;
+    top_500_average_revenue_uplift: number;
+    bottom_500_average_conversion_uplift: number;
+    bottom_500_average_revenue_uplift: number;
+    policy: string;
+  };
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 async function request<T>(path: string): Promise<T> {
@@ -101,4 +135,8 @@ export function fetchExperimentResults() {
 
 export function fetchExperimentConfig() {
   return request<ExperimentConfig>("/experiment/config");
+}
+
+export function fetchMlInsights() {
+  return request<MlInsights>("/experiment/ml-insights");
 }

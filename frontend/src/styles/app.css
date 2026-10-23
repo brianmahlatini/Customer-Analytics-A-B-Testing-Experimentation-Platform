@@ -270,6 +270,65 @@ th {
   gap: 12px;
 }
 
+.ml-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.ml-card {
+  border: 1px solid #e0e8e4;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.ml-card strong {
+  display: block;
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+.ml-card p {
+  color: #5e6a67;
+  line-height: 1.45;
+  margin-bottom: 12px;
+}
+
+.ml-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ml-stats span,
+.recommendation-strip span {
+  color: #61706c;
+  font-size: 0.82rem;
+}
+
+.recommendation-strip {
+  align-items: center;
+  background: #eef4f1;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 220px 220px 1fr;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+}
+
+.recommendation-strip strong {
+  display: block;
+  font-size: 1.18rem;
+  margin-top: 4px;
+}
+
+.recommendation-strip p {
+  color: #44534f;
+  margin: 0;
+}
+
 .quality-item {
   align-items: start;
   border-bottom: 1px solid #e4ebe7;
@@ -306,7 +365,12 @@ th {
   }
 
   .metric-grid,
+  .ml-grid,
   .sample-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-strip {
     grid-template-columns: 1fr;
   }
 

@@ -8,6 +8,7 @@ A senior-level statistics and causal inference project that determines whether a
 - Measurable hypothesis and primary metric definition for conversion-rate improvement
 - Sample size and experiment-duration planning using statistical power analysis
 - Treatment and control analysis using proportions z-tests, Welch revenue tests, p-values, and 95% confidence intervals
+- Machine learning uplift modeling with conversion propensity, T-learner CATE estimation, and high-uplift segment discovery
 - Absolute uplift, relative uplift, conversion lift, revenue-per-visitor lift, and estimated monthly and annual revenue impact
 - Sample-ratio mismatch detection using chi-square goodness-of-fit testing
 - Data-quality checks for missing values, duplicate assignments, invalid revenue, and variant labels
@@ -24,6 +25,7 @@ A senior-level statistics and causal inference project that determines whether a
 - NumPy
 - SciPy
 - statsmodels
+- scikit-learn
 
 ### Backend
 
@@ -58,6 +60,8 @@ A senior-level statistics and causal inference project that determines whether a
 |   |   |   |-- statistics.py
 |   |   |-- data/
 |   |   |   |-- generator.py
+|   |   |-- ml/
+|   |   |   |-- uplift.py
 |   |-- scripts/
 |   |   |-- generate_data.py
 |   |-- tests/
@@ -191,6 +195,19 @@ Revenue per visitor is analyzed using Welch's t-test. The output includes:
 
 The SRM check uses a chi-square goodness-of-fit test against the expected 50/50 allocation. A failed SRM check indicates the experiment assignment or logging pipeline should be investigated before interpreting the result.
 
+## Machine Learning Design
+
+The ML layer is designed for experimentation and causal decision support, not generic prediction.
+
+| Algorithm | Role | Why it fits |
+| --- | --- | --- |
+| Logistic Regression | Conversion propensity model | Provides an interpretable baseline response model using pre-treatment covariates |
+| Random Forest T-Learner | Conversion uplift model | Estimates conditional average treatment effect by comparing predicted treatment and control conversion probabilities |
+| Random Forest T-Learner | Revenue uplift model | Estimates incremental revenue per customer for targeting and personalization |
+| Segment aggregation | Uplift segment discovery | Ranks channel, device, and country combinations by predicted conversion and revenue lift |
+
+Only pre-treatment assignment features are used for ML targeting: channel, device, country, weekday, weekend flag, and experiment day. Outcome and post-treatment guardrail fields are excluded from uplift features to avoid leakage.
+
 ## Local Setup
 
 ### 1. Backend
@@ -237,6 +254,7 @@ docker compose -f infra/docker-compose.yml up -d
 | `GET /experiment/config` | Hypothesis, metrics, guardrails, and sample-size plan |
 | `GET /experiment/power` | Dynamic sample-size calculation |
 | `GET /experiment/results` | Experiment results, tests, SRM, guardrails, and recommendation |
+| `GET /experiment/ml-insights` | ML model summaries, uplift segments, and targeting recommendation |
 | `GET /experiment/events?limit=500` | Generated customer-level event sample |
 
 ## Dashboard
@@ -251,6 +269,8 @@ The React dashboard presents:
 - Conversion-rate chart
 - Confidence interval chart
 - Statistical results table
+- ML uplift model summaries
+- Top predicted uplift segments
 - Guardrail metrics table
 - Data-quality checks
 

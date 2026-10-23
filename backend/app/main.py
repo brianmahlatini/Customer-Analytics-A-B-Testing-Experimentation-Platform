@@ -7,6 +7,7 @@ from app.analytics.quality import data_quality_checks, sample_ratio_mismatch
 from app.analytics.sample_size import calculate_conversion_sample_size
 from app.analytics.statistics import experiment_results
 from app.data.generator import load_or_generate_events
+from app.ml.uplift import ml_experiment_insights
 
 
 app = FastAPI(
@@ -66,6 +67,12 @@ def results() -> dict:
     payload["quality_checks"] = data_quality_checks(events)
     payload["sample_ratio_mismatch"] = sample_ratio_mismatch(events)
     return payload
+
+
+@app.get("/experiment/ml-insights")
+def ml_insights() -> dict:
+    events = load_or_generate_events()
+    return ml_experiment_insights(events)
 
 
 @app.get("/experiment/events")
