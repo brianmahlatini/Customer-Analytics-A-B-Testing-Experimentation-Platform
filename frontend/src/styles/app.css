@@ -43,9 +43,15 @@ button {
   gap: 12px;
 }
 
-.spin {
+.loading-ring {
   animation: spin 1s linear infinite;
+  border: 3px solid #d8e3de;
+  border-top-color: #245953;
+  border-radius: 999px;
+  display: inline-block;
+  height: 30px;
   margin: 0 auto;
+  width: 30px;
 }
 
 @keyframes spin {

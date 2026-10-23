@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlaskConical, RefreshCw } from "lucide-react";
+import FlaskConical from "lucide-react/dist/esm/icons/flask-conical.js";
 import { ExperimentSummary } from "./components/ExperimentSummary";
 import { GuardrailTable } from "./components/GuardrailTable";
 import { ResultsTable } from "./components/ResultsTable";
@@ -35,7 +35,7 @@ export default function App() {
   if (loading) {
     return (
       <main className="app-shell app-shell--center">
-        <RefreshCw className="spin" size={30} aria-hidden="true" />
+        <span className="loading-ring" aria-hidden="true" />
         <p>Loading experiment dashboard...</p>
       </main>
     );

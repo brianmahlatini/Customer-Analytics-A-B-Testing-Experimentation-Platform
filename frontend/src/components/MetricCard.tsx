@@ -1,4 +1,6 @@
-import { ArrowUpRight, BadgeCheck, CircleAlert } from "lucide-react";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right.js";
+import BadgeCheck from "lucide-react/dist/esm/icons/badge-check.js";
+import CircleAlert from "lucide-react/dist/esm/icons/circle-alert.js";
 
 type MetricCardProps = {
   title: string;
