@@ -1,24 +1,25 @@
 # Customer Analytics & A/B Testing Experimentation Platform
 
-A senior-level statistics and causal inference project that determines whether a new marketing campaign, website change, or sales strategy improves business outcomes. The platform generates synthetic customer experiment data, plans sample size and duration, analyzes treatment versus control groups, checks experiment integrity, and presents a clear launch recommendation with business impact.
+A senior-level full-stack statistics, causal inference, and machine learning project that determines whether a new marketing campaign, website change, or sales strategy actually improves business outcomes. The platform plans experiments, generates customer-level A/B test data, analyzes treatment and control groups, checks experiment integrity, estimates uplift, applies appropriate uplift modeling algorithms, and presents a clear launch recommendation.
 
 ## Features
 
-- Synthetic customer-level A/B experiment data with acquisition channels, devices, countries, conversions, revenue, bounce events, refunds, and page-load guardrails
-- Measurable hypothesis and primary metric definition for conversion-rate improvement
-- Sample size and experiment-duration planning using statistical power analysis
+- Synthetic customer-level A/B experiment data generation with acquisition channel, device, country, conversion, revenue, bounce, refund, and page-load metrics
+- Measurable hypothesis definition with primary, secondary, and guardrail metrics
+- Sample size and experiment duration calculation using statistical power analysis
 - Treatment and control analysis using proportions z-tests, Welch revenue tests, p-values, and 95% confidence intervals
-- Machine learning uplift modeling with conversion propensity, T-learner CATE estimation, and high-uplift segment discovery
 - Absolute uplift, relative uplift, conversion lift, revenue-per-visitor lift, and estimated monthly and annual revenue impact
 - Sample-ratio mismatch detection using chi-square goodness-of-fit testing
-- Data-quality checks for missing values, duplicate assignments, invalid revenue, and variant labels
-- FastAPI backend serving experiment configuration, power calculations, generated events, and statistical results
-- React TypeScript dashboard with Plotly visualizations for significance, confidence intervals, guardrails, and recommendation
+- Data-quality checks for missing values, duplicate user assignments, invalid revenue, and variant labels
+- Machine learning layer with conversion propensity modeling and T-learner uplift modeling
+- Segment-level CATE ranking for high-uplift customer targeting
+- FastAPI backend for experiment configuration, power planning, results, events, and ML insights
+- React TypeScript dashboard for statistical significance, confidence intervals, guardrails, uplift, and targeting recommendations
 - PostgreSQL schema and reporting methodology notes
 
 ## Tech Stack
 
-### Statistics and Analytics
+### Statistics, Causal Inference, and Machine Learning
 
 - Python
 - pandas
@@ -41,11 +42,12 @@ A senior-level statistics and causal inference project that determines whether a
 - Plotly
 - Lucide React
 
-### Database and Infrastructure
+### Database and Reporting
 
-- PostgreSQL
+- PostgreSQL schema
 - SQL
 - Docker Compose
+- Experiment methodology notes
 
 ## Project Structure
 
@@ -67,14 +69,26 @@ A senior-level statistics and causal inference project that determines whether a
 |   |-- tests/
 |   |   |-- test_analytics.py
 |   |   |-- test_api.py
+|   |   |-- test_ml.py
 |   |-- requirements.txt
+|-- data/
+|   |-- generated_experiment_events.csv
 |-- frontend/
 |   |-- src/
 |   |   |-- App.tsx
 |   |   |-- main.tsx
 |   |   |-- components/
+|   |   |   |-- ExperimentSummary.tsx
+|   |   |   |-- GuardrailTable.tsx
+|   |   |   |-- MetricCard.tsx
+|   |   |   |-- MlInsightsPanel.tsx
+|   |   |   |-- ResultsTable.tsx
+|   |   |   |-- SampleSizePanel.tsx
+|   |   |   |-- UpliftChart.tsx
 |   |   |-- services/
+|   |   |   |-- api.ts
 |   |   |-- styles/
+|   |   |   |-- app.css
 |   |-- package.json
 |   |-- tsconfig.json
 |-- infra/
@@ -82,11 +96,9 @@ A senior-level statistics and causal inference project that determines whether a
 |   |-- schema.sql
 |-- reports/
 |   |-- experiment_methodology.md
-|-- data/
-|   |-- .gitkeep
 |-- .gitignore
-|-- README.md
 |-- pytest.ini
+|-- README.md
 ```
 
 ## Experiment Design
@@ -97,13 +109,11 @@ Does a redesigned marketing campaign landing page increase purchases compared wi
 
 ### Hypothesis
 
-The new campaign landing page increases completed purchases without harming guardrail metrics.
+The new campaign landing page increases completed purchases without harming customer-experience guardrails.
 
 ### Primary Metric
 
 `conversion_rate`
-
-This is calculated as:
 
 ```text
 conversions / assigned_visitors
@@ -112,8 +122,6 @@ conversions / assigned_visitors
 ### Secondary Metric
 
 `revenue_per_visitor`
-
-This is calculated as:
 
 ```text
 total_revenue / assigned_visitors
@@ -125,88 +133,119 @@ total_revenue / assigned_visitors
 - Refund rate
 - Average page load time
 
-## Generated Dataset
+## Dataset
 
-The data generator creates a deterministic synthetic experiment dataset.
+The data generator creates a deterministic customer-level experiment dataset with:
 
-| Field | Description |
-| --- | --- |
-| `event_date` | Date of user exposure |
-| `user_id` | Unique assigned user |
-| `variant` | Control or treatment |
-| `channel` | Acquisition channel |
-| `device` | User device type |
-| `country` | Country segment |
-| `converted` | Binary purchase outcome |
-| `revenue` | Purchase revenue, zero for non-converters |
-| `session_minutes` | Session engagement |
-| `bounced` | Binary bounce outcome |
-| `page_load_ms` | Page load performance guardrail |
-| `refunded` | Binary refund guardrail |
+- Customer assignment: user ID, variant, exposure date
+- Customer profile: acquisition channel, device, country
+- Conversion outcome: binary purchase flag
+- Revenue outcome: purchase revenue, zero for non-converters
+- Engagement signal: session duration and bounce flag
+- Guardrail signals: page-load time and refund flag
 
-Latest generated design:
+Latest generated dataset:
 
-| Rows | Variants | Allocation | Date Range |
-| ---: | --- | --- | --- |
-| 48,000 | control, treatment | 50/50 target | 2026-08-31 to 2026-09-27 |
+| Rows | Control Users | Treatment Users | Allocation | Date Range |
+| ---: | ---: | ---: | --- | --- |
+| 48,000 | 23,850 | 24,150 | 50/50 target | 2026-08-31 to 2026-09-27 |
 
-## Statistical Methods
+## Features X
 
-### Sample Size Planning
+The ML uplift layer uses only pre-treatment or assignment-time features:
 
-The platform calculates sample size for a two-sided conversion-rate test using:
+- Acquisition channel
+- Device type
+- Country
+- Weekday
+- Weekend flag
+- Experiment day
 
-- Baseline conversion rate
-- Minimum detectable effect
-- Alpha level
-- Desired power
-- Expected visitors per day
+Outcome fields such as conversion, revenue, refunds, bounce, and page-load results are excluded from model features to avoid leakage.
 
-Default plan:
+## Target y
 
-| Baseline CVR | MDE | Alpha | Power | Visitors / Day |
-| ---: | ---: | ---: | ---: | ---: |
-| 8.3% | 1.0 pp | 0.05 | 80% | 1,700 |
+Primary experiment target:
 
-### Conversion Test
+```text
+converted = 1 when the assigned user completes a purchase
+converted = 0 otherwise
+```
 
-The primary analysis compares treatment and control conversion rates using a two-proportion z-test. The output includes:
+Secondary business target:
 
-- Control conversion rate
-- Treatment conversion rate
-- Absolute uplift
-- Relative uplift
-- 95% confidence interval
-- p-value
-- Statistical significance flag
+```text
+revenue = customer revenue generated after assignment
+```
 
-### Revenue Test
+## Statistical Tests
 
-Revenue per visitor is analyzed using Welch's t-test. The output includes:
+The platform analyzes the A/B test with:
 
-- Control revenue per visitor
-- Treatment revenue per visitor
-- Incremental revenue per visitor
-- Relative revenue uplift
-- 95% confidence interval
-- p-value
+- Two-proportion z-test for conversion-rate difference
+- Welch two-sample t-test for revenue-per-visitor difference
+- 95% confidence intervals for uplift uncertainty
+- Chi-square goodness-of-fit test for sample-ratio mismatch
+- Data-quality checks before interpreting results
 
-### Sample-Ratio Mismatch
+Latest statistical result:
 
-The SRM check uses a chi-square goodness-of-fit test against the expected 50/50 allocation. A failed SRM check indicates the experiment assignment or logging pipeline should be investigated before interpreting the result.
+| Metric | Control | Treatment | Absolute Uplift | Relative Uplift | p-value | 95% CI |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Conversion rate | 8.65% | 10.09% | 1.44 pp | 16.60% | 0.00000007 | 0.92 pp to 1.96 pp |
+| Revenue / visitor | $4.12 | $4.99 | $0.88 | 21.37% | 0.0000000006 | $0.60 to $1.16 |
 
-## Machine Learning Design
+Sample-ratio mismatch result:
 
-The ML layer is designed for experimentation and causal decision support, not generic prediction.
+| Control Count | Treatment Count | Expected Split | SRM p-value | Status |
+| ---: | ---: | --- | ---: | --- |
+| 23,850 | 24,150 | 50/50 | 0.1709 | Passed |
 
-| Algorithm | Role | Why it fits |
-| --- | --- | --- |
-| Logistic Regression | Conversion propensity model | Provides an interpretable baseline response model using pre-treatment covariates |
-| Random Forest T-Learner | Conversion uplift model | Estimates conditional average treatment effect by comparing predicted treatment and control conversion probabilities |
-| Random Forest T-Learner | Revenue uplift model | Estimates incremental revenue per customer for targeting and personalization |
-| Segment aggregation | Uplift segment discovery | Ranks channel, device, and country combinations by predicted conversion and revenue lift |
+Estimated revenue impact:
 
-Only pre-treatment assignment features are used for ML targeting: channel, device, country, weekday, weekend flag, and experiment day. Outcome and post-treatment guardrail fields are excluded from uplift features to avoid leakage.
+| Monthly Visitors | Incremental Revenue / Visitor | Monthly Revenue Uplift | Annual Revenue Uplift |
+| ---: | ---: | ---: | ---: |
+| 180,000 | $0.88 | $158,324 | $1,899,889 |
+
+Recommendation:
+
+```text
+Launch the treatment.
+```
+
+## ML Design
+
+The machine learning layer is designed for experimentation and causal decision support, not generic prediction.
+
+### Models Used
+
+- LogisticRegression baseline conversion propensity model
+- RandomForestClassifier T-learner for conversion uplift
+- RandomForestRegressor T-learner for revenue uplift
+- Segment aggregation for high-uplift targeting recommendations
+
+### Why These Algorithms Fit
+
+- Logistic Regression is interpretable and works well as a baseline conversion propensity model.
+- T-learners are appropriate for A/B testing because they model treatment and control outcomes separately, then estimate customer-level conditional average treatment effects.
+- Random Forest models capture non-linear segment interactions across channel, device, country, and time.
+- Segment aggregation turns individual uplift estimates into practical campaign-targeting recommendations.
+
+Latest ML run:
+
+| Model | Purpose | Metric |
+| --- | --- | ---: |
+| LogisticRegression | Baseline conversion propensity | Holdout AUC: 0.515 |
+| T-Learner with RandomForestClassifier | Conversion uplift estimation | Probability MAE: 0.492 |
+| T-Learner with RandomForestRegressor | Revenue uplift estimation | Revenue MAE: $8.19 |
+
+Top predicted uplift segments:
+
+| Channel | Device | Country | Customers | Predicted CVR Uplift | Predicted Revenue Uplift |
+| --- | --- | --- | ---: | ---: | ---: |
+| email | desktop | AU | 242 | 4.33% | $3.34 |
+| email | desktop | ZA | 504 | 5.43% | $2.44 |
+| paid_search | desktop | AU | 397 | 4.92% | $2.31 |
 
 ## Local Setup
 
@@ -248,31 +287,66 @@ docker compose -f infra/docker-compose.yml up -d
 
 ## API Endpoints
 
-| Endpoint | Description |
-| --- | --- |
-| `GET /health` | API health check |
-| `GET /experiment/config` | Hypothesis, metrics, guardrails, and sample-size plan |
-| `GET /experiment/power` | Dynamic sample-size calculation |
-| `GET /experiment/results` | Experiment results, tests, SRM, guardrails, and recommendation |
-| `GET /experiment/ml-insights` | ML model summaries, uplift segments, and targeting recommendation |
-| `GET /experiment/events?limit=500` | Generated customer-level event sample |
+```text
+GET /health
+GET /experiment/config
+GET /experiment/power
+GET /experiment/results
+GET /experiment/ml-insights
+GET /experiment/events?limit=500
+```
+
+The experiment results response includes:
+
+- Hypothesis and primary metric
+- Variant summaries
+- Conversion statistical test
+- Revenue statistical test
+- Guardrail metrics
+- Sample-ratio mismatch check
+- Data-quality checks
+- Estimated business impact
+- Launch recommendation
+
+The ML insights response includes:
+
+- Model names and model purposes
+- Propensity model quality
+- Uplift model quality
+- Top uplift segments
+- Targeting recommendation
 
 ## Dashboard
 
 The React dashboard presents:
 
-- Experiment recommendation
-- Conversion uplift
-- Estimated monthly and annual revenue uplift
-- Sample-ratio mismatch result
-- Power and duration plan
+- Recommendation summary
+- Conversion and revenue uplift
+- Estimated monthly and annual revenue impact
+- Power and sample-size plan
 - Conversion-rate chart
 - Confidence interval chart
 - Statistical results table
 - ML uplift model summaries
 - Top predicted uplift segments
-- Guardrail metrics table
+- Guardrail metrics
 - Data-quality checks
+
+## Regenerating Data
+
+Run:
+
+```bash
+python backend/scripts/generate_data.py
+```
+
+This regenerates:
+
+- Synthetic customer-level experiment data
+- Treatment and control assignments
+- Conversion outcomes
+- Revenue outcomes
+- Engagement and guardrail metrics
 
 ## Testing
 
