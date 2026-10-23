@@ -1,0 +1,25 @@
+import { ArrowUpRight, BadgeCheck, CircleAlert } from "lucide-react";
+
+type MetricCardProps = {
+  title: string;
+  value: string;
+  detail: string;
+  tone?: "positive" | "neutral" | "warning";
+};
+
+export function MetricCard({ title, value, detail, tone = "neutral" }: MetricCardProps) {
+  const Icon = tone === "warning" ? CircleAlert : tone === "positive" ? ArrowUpRight : BadgeCheck;
+
+  return (
+    <article className={`metric-card metric-card--${tone}`}>
+      <div className="metric-card__icon">
+        <Icon size={18} aria-hidden="true" />
+      </div>
+      <div>
+        <p>{title}</p>
+        <strong>{value}</strong>
+        <span>{detail}</span>
+      </div>
+    </article>
+  );
+}
