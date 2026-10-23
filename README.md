@@ -217,7 +217,7 @@ Launch the treatment.
 
 The machine learning layer is designed for experimentation and causal decision support, not generic prediction.
 
-### Models Used
+### Models Trained
 
 - LogisticRegression baseline conversion propensity model
 - RandomForestClassifier T-learner for conversion uplift
@@ -231,13 +231,17 @@ The machine learning layer is designed for experimentation and causal decision s
 - Random Forest models capture non-linear segment interactions across channel, device, country, and time.
 - Segment aggregation turns individual uplift estimates into practical campaign-targeting recommendations.
 
-Latest ML run:
+Latest training run:
 
-| Model | Purpose | Metric |
+| Model | Role | Metric |
 | --- | --- | ---: |
-| LogisticRegression | Baseline conversion propensity | Holdout AUC: 0.515 |
-| T-Learner with RandomForestClassifier | Conversion uplift estimation | Probability MAE: 0.492 |
-| T-Learner with RandomForestRegressor | Revenue uplift estimation | Revenue MAE: $8.19 |
+| LogisticRegression baseline | Conversion propensity model | Holdout AUC: 0.515 |
+| T-Learner with RandomForestClassifier | Conversion uplift model | Probability MAE: 0.492 |
+| T-Learner with RandomForestRegressor | Revenue uplift model | Revenue MAE: $8.19 |
+
+Selected runtime model: T-Learner uplift model with RandomForest estimators.
+
+The LogisticRegression model is kept as the interpretable baseline for customer conversion propensity. The selected runtime model is the T-Learner because this project needs estimated treatment effect and revenue uplift, not only conversion prediction.
 
 Top predicted uplift segments:
 
